@@ -20,10 +20,11 @@ insatll requirements
  pip install -r requirements.txt
 
 ```
-
+``` bash
 download the data from this link 
 
 https://drive.google.com/drive/folders/18zqQiCJVgF7uzXgfbIJ-04zgz1ItNfF5?usp=sharing 
+``` bash
 
 ``` bash 
 git init 
@@ -37,6 +38,7 @@ dvc init
 dvc add data_given/winequality.csv
 ``` bash
 
+``` bash
 git add .
 ``` bash
 
