@@ -4,6 +4,6 @@ stages:
     deps:
       - src/load_data.py
       - src/get_data.py
-      - params.yaml
+      - data_given/raw_dataset.csv
     outs:
       - data/raw/raw_dataset.csv
