@@ -25,13 +25,22 @@ download the data from this link
 
 https://drive.google.com/drive/folders/18zqQiCJVgF7uzXgfbIJ-04zgz1ItNfF5?usp=sharing 
 
-git init
+``` bash 
+git init 
+``` bash
 
+``` bash
 dvc init 
+``` bash
 
+``` bash
 dvc add data_given/winequality.csv
+``` bash
 
 git add .
+``` bash
 
+``` bash
 git commit -m " first commit"
 
+``` bash
