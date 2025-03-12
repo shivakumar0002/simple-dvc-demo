@@ -1,9 +1,32 @@
+# filepath: /Users/godipally.shivakumar/Desktop/simple_app/dvc.yaml
 stages:
   load_data:
     cmd: python src/load_data.py --config params.yaml
     deps:
       - src/load_data.py
       - src/get_data.py
-      - data_given/raw_dataset.csv
+      - params.yaml
     outs:
       - data/raw/raw_dataset.csv
+
+  split_data:
+    cmd: python src/split_data.py --config params.yaml
+    deps:
+      - src/split_data.py
+      - data/raw/raw_dataset.csv
+      - params.yaml
+    outs:
+      - data/processed/train_winequality.csv
+      - data/processed/test_winequality.csv
+
+  train_and_evaluate:
+    cmd: python src/train_and_evaluate.py --config params.yaml
+    deps:
+      - src/train_and_evaluate.py
+      - data/processed/train_winequality.csv
+      - data/processed/test_winequality.csv
+      - params.yaml
+    outs:
+      - saved_models/model.joblib
+      - reports/scores.json
+      - reports/params.json
