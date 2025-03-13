@@ -1,7 +1,7 @@
 base:
   project: "winequality-project"
   random_state: 42
-  target_col: "quality"  # Ensure this matches the actual target column in the dataset
+  target_col: "TARGET"
 
 data_source:
   s3_source: "data_given/winequality.csv"
