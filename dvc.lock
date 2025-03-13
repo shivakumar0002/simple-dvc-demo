@@ -1,12 +1,12 @@
 schema: '2.0'
 stages:
   load_data:
-    cmd: python src/load_data.py --config params.yaml
+    cmd: python src/load_data.py --config=params.yaml
     deps:
-    - path: params.yaml
+    - path: data_given/winequality.csv
       hash: md5
-      md5: f22349c8c28430b69e46d8167591365f
-      size: 490
+      md5: ccc8d3507eb151f53f760d36abdef888
+      size: 91998
     - path: src/get_data.py
       hash: md5
       md5: 25e44af7b9364713dac4ddcb0df398a6
@@ -16,21 +16,17 @@ stages:
       md5: 16ac6fdd211739f99729dedc202af8ba
       size: 1287
     outs:
-    - path: data/raw/raw_dataset.csv
+    - path: data/raw/winequality.csv
       hash: md5
       md5: d98e8f2eca228c11c4de1cc96866a54d
       size: 91998
   split_data:
-    cmd: python src/split_data.py --config params.yaml
+    cmd: python src/split_data.py --config=params.yaml
     deps:
-    - path: data/raw/raw_dataset.csv
+    - path: data/raw/winequality.csv
       hash: md5
       md5: d98e8f2eca228c11c4de1cc96866a54d
       size: 91998
-    - path: params.yaml
-      hash: md5
-      md5: f22349c8c28430b69e46d8167591365f
-      size: 490
     - path: src/split_data.py
       hash: md5
       md5: c8f9a380a99d573ccd04b431e3827e86
@@ -45,7 +41,7 @@ stages:
       md5: 4bccf4d668cdc60115de42ba74d416ab
       size: 73633
   train_and_evaluate:
-    cmd: python src/train_and_evaluate.py --config params.yaml
+    cmd: python src/train_and_evaluate.py --config=params.yaml
     deps:
     - path: data/processed/test_winequality.csv
       hash: md5
@@ -55,23 +51,23 @@ stages:
       hash: md5
       md5: 4bccf4d668cdc60115de42ba74d416ab
       size: 73633
-    - path: params.yaml
-      hash: md5
-      md5: f22349c8c28430b69e46d8167591365f
-      size: 490
     - path: src/train_and_evaluate.py
       hash: md5
       md5: 26d25beaebb77687e741e572f1c032e9
       size: 2785
+    params:
+      params.yaml:
+        estimators.ElasticNet.params.alpha: 0.88
+        estimators.ElasticNet.params.l1_ratio: 0.4
     outs:
-    - path: reports/params.json
+    - path: report/params.json
       hash: md5
-      md5: 7cfc7992358d60319cf1f58cbd84dda7
-      size: 42
-    - path: reports/scores.json
+      md5: d41d8cd98f00b204e9800998ecf8427e
+      size: 0
+    - path: report/scores.json
       hash: md5
-      md5: 4b125f69dcdc4117134e3062ad079c66
-      size: 64
+      md5: d41d8cd98f00b204e9800998ecf8427e
+      size: 0
     - path: saved_models/model.joblib
       hash: md5
       md5: b6cce14bb37b7c56c12f8baaa5a3b1e2

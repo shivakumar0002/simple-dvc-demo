@@ -16,8 +16,9 @@ split_data:
 
 estimators:
   ElasticNet:
-    alpha: 0.88
-    l1_ratio: 0.4
+    params:  # Added "params" to match dvc.yaml
+      alpha: 0.88
+      l1_ratio: 0.4
 
 model_dir: "saved_models"
 

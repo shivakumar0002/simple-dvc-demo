@@ -32,4 +32,5 @@ stages:
     - report/params.json:
         cache: false
     outs:
-    - saved_models/model.joblib
+    - saved_models/model.joblib    # Track changes with Git
+    
