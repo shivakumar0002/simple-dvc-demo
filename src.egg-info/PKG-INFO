@@ -1,0 +1,9 @@
+Metadata-Version: 2.2
+Name: src
+Version: 0.0.1
+Summary: its a wine Q package
+Author: c17hawke
+License: MIT
+Dynamic: author
+Dynamic: license
+Dynamic: summary
