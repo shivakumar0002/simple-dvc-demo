@@ -43,28 +43,45 @@ git add .
 ``` 
 
 ``` bash
-git commit -m " first commit"
-
+git commit -m " first commit" 
 ``` 
+``` bash
 tox command
+```
+
 ``` bash
 tox
 ```
-for rebuilding
 ```bash
+for rebuilding
+```
+
+```bash 
 tox -r
 ```
+
+```bash
 pytest command
+```
+
 ```bash
 pytest -v
 ```
 
+```bash
 setup commands -
+```
+
+
 ```bash
 pip install -e.
 ```
 
+
+```bash
 build your own package commands-
+```
+
 ```bash
 python setup.py sdist bdist_wheel
 ```
