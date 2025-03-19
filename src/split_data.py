@@ -44,4 +44,4 @@ if __name__ == "__main__":
     parser.add_argument("--config", default="params.yaml", help="Path to configuration file")
     parsed_args = parser.parse_args()
     
-    split_and_save_data(config_path=parsed_args.config)
+    split_and_save_data(config_path=parsed_args.config) 
