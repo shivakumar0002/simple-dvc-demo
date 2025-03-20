@@ -1,6 +1,6 @@
 # Load the train and test data
 # Train the algorithm
-# Save the metrics and parameters
+# Save the metrics, parameters, and track with MLflow
 
 import os
 import warnings
@@ -10,26 +10,29 @@ import numpy as np
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from sklearn.linear_model import ElasticNet
 from get_data import read_params
+from urllib.parse import urlparse
 import argparse
 import joblib
 import json
+import mlflow
+import mlflow.sklearn
 
 
 def eval_metrics(actual, pred):
     """
-    Calculate evaluation metrics for the trained model.
+    Compute evaluation metrics for model performance.
     Returns RMSE, MAE, and R2 score.
     """
     rmse = np.sqrt(mean_squared_error(actual, pred))
-    mae = mean_absolute_error(actual, pred)
+    mae = mean_absolute_error(actual, pred))
     r2 = r2_score(actual, pred)
     return rmse, mae, r2
 
 
 def train_and_evaluate(config_path):
     """
-    Trains the ElasticNet model and evaluates it using the test data.
-    Saves the trained model, evaluation metrics, and parameters.
+    Trains the ElasticNet model, evaluates it, logs metrics to MLflow,
+    and saves the trained model.
     """
     # Read configuration parameters
     config = read_params(config_path)
@@ -40,9 +43,9 @@ def train_and_evaluate(config_path):
     random_state = config["base"]["random_state"]
     model_dir = config["model_dir"]
 
-    # Model hyperparameters (aligned with params.yaml)
-    alpha = config["estimators"]["ElasticNet"]["params"]["alpha"]
-    l1_ratio = config["estimators"]["ElasticNet"]["params"]["l1_ratio"]
+    # Model hyperparameters
+    alpha = config["estimators"]["ElasticNet"]["alpha"]
+    l1_ratio = config["estimators"]["ElasticNet"]["l1_ratio"]
 
     # Extract target column
     target = config["base"]["target_col"]
@@ -66,54 +69,54 @@ def train_and_evaluate(config_path):
     train_x = train.drop(target, axis=1)
     test_x = test.drop(target, axis=1)
 
-    # Train the ElasticNet model
-    lr = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, random_state=random_state)
-    lr.fit(train_x, train_y)
+    ################### ✅ MLFLOW INTEGRATION ✅ ###############################
+    mlflow_config = config["mlflow_config"]
+    remote_server_uri = mlflow_config["remote_server_uri"]
 
-    # Make predictions
-    predicted_qualities = lr.predict(test_x)
+    # Set MLflow tracking URI
+    mlflow.set_tracking_uri(remote_server_uri)
 
-    # Evaluate model performance
-    rmse, mae, r2 = eval_metrics(test_y, predicted_qualities)
+    # Set MLflow experiment name
+    mlflow.set_experiment(mlflow_config["experiment_name"])
 
-    print(f"✅ ElasticNet model (alpha={alpha}, l1_ratio={l1_ratio}):")
-    print(f"  RMSE: {rmse}")
-    print(f"  MAE: {mae}")
-    print(f"  R2: {r2}")
+    with mlflow.start_run(run_name=mlflow_config["run_name"]) as mlops_run:
+        # Initialize and train model
+        lr = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, random_state=random_state)
+        lr.fit(train_x, train_y)
 
-    # Save metrics (aligned with dvc.yaml)
-    scores_file = config["reports"]["scores"]
-    params_file = config["reports"]["params"]
+        # Make predictions
+        predicted_qualities = lr.predict(test_x)
 
-    os.makedirs(os.path.dirname(scores_file), exist_ok=True)
+        # Evaluate model performance
+        rmse, mae, r2 = eval_metrics(test_y, predicted_qualities)
 
-    with open(scores_file, "w") as f:
-        scores = {
-            "rmse": rmse,
-            "mae": mae,
-            "r2": r2
-        }
-        json.dump(scores, f, indent=4)
+        # Log hyperparameters to MLflow
+        mlflow.log_param("alpha", alpha)
+        mlflow.log_param("l1_ratio", l1_ratio)
 
-    with open(params_file, "w") as f:
-        params = {
-            "alpha": alpha,
-            "l1_ratio": l1_ratio,
-        }
-        json.dump(params, f, indent=4)
+        # Log evaluation metrics to MLflow
+        mlflow.log_metric("rmse", rmse)
+        mlflow.log_metric("mae", mae)
+        mlflow.log_metric("r2", r2)
 
-    # Save trained model (aligned with dvc.yaml)
-    os.makedirs(model_dir, exist_ok=True)
-    model_path = os.path.join(model_dir, "model.joblib")
-    joblib.dump(lr, model_path)
+        # Determine MLflow tracking storage type
+        tracking_url_type_store = urlparse(mlflow.get_artifact_uri()).scheme
 
-    print(f"✅ Model saved at: {model_path}")
-    print(f"✅ Metrics saved at: {scores_file}")
-    print(f"✅ Params saved at: {params_file}")
+        # Log model to MLflow (Local or Remote Tracking)
+        if tracking_url_type_store != "file":
+            mlflow.sklearn.log_model(
+                lr, 
+                "model", 
+                registered_model_name=mlflow_config["registered_model_name"]
+            )
+        else:
+            mlflow.sklearn.save_model(lr, "model")
+
+        print(f"✅ MLflow logging completed with experiment: {mlflow_config['experiment_name']}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train and evaluate the model")
+    parser = argparse.ArgumentParser(description="Train and evaluate the model with MLflow logging")
     parser.add_argument("--config", default="params.yaml", help="Path to configuration file")
     parsed_args = parser.parse_args()
     
