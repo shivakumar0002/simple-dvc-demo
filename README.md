@@ -59,12 +59,12 @@ git commit -m " first commit"
 
 9. Run tox to test your environment setup
 ``` bash
-tox command
+tox
 ```
 
 10. Rebuild tox environments (if needed)
 ```bash
-for rebuilding
+tox -r
 ```
 
 🧪 Run Unit Tests
@@ -77,7 +77,6 @@ pytest -v
 📦 Packaging Your Project
 
 12. Install the project as a local package
-
 
 ```bash
 pip install -e.
