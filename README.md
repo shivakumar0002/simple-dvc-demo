@@ -45,43 +45,30 @@ git add .
 ``` bash
 git commit -m " first commit" 
 ``` 
-``` bash
-tox command
-```
 
-``` bash
-tox
-```
-```bash
-for rebuilding
-```
-
+for rebuilding -
 ```bash 
 tox -r
 ```
 
-```bash
-pytest command
-```
-
+pytest command -
 ```bash
 pytest -v
 ```
 
-```bash
-setup commands -
-```
-
-
+--- setup commands 
 ```bash
 pip install -e.
 ```
 
 
-```bash
-build your own package commands-
-```
-
+build your own package commands -
 ```bash
 python setup.py sdist bdist_wheel
 ```
+
+
+mlflow server command- 
+```bash 
+
+``` 
