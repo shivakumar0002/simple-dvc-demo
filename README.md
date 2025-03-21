@@ -78,7 +78,7 @@ pytest -v
 
 12. Install the project as a local package
 
-```bash
+```bash 
 pip install -e.
 ```
 
