@@ -1,6 +1,4 @@
-# Load the train and test data
-# Train the algorithm
-# Save the metrics, parameters, and track with MLflow
+# Train the model, evaluate it, log metrics/parameters with MLflow, and save the trained model locally.
 
 import os
 import warnings
@@ -17,7 +15,6 @@ import json
 import mlflow
 import mlflow.sklearn
 
-
 def eval_metrics(actual, pred):
     """
     Compute evaluation metrics for model performance.
@@ -28,11 +25,10 @@ def eval_metrics(actual, pred):
     r2 = r2_score(actual, pred)
     return rmse, mae, r2
 
-
 def train_and_evaluate(config_path):
     """
     Trains the ElasticNet model, evaluates it, logs metrics to MLflow,
-    and saves the trained model.
+    and saves the trained model locally.
     """
     # Read configuration parameters
     config = read_params(config_path)
@@ -43,9 +39,9 @@ def train_and_evaluate(config_path):
     random_state = config["base"]["random_state"]
     model_dir = config["model_dir"]
 
-    # Model hyperparameters
-    alpha = config["estimators"]["ElasticNet"]["alpha"]
-    l1_ratio = config["estimators"]["ElasticNet"]["l1_ratio"]
+    # Model hyperparameters (access from nested 'params' dictionary)
+    alpha = config["estimators"]["ElasticNet"]["params"]["alpha"]
+    l1_ratio = config["estimators"]["ElasticNet"]["params"]["l1_ratio"]
 
     # Extract target column
     target = config["base"]["target_col"]
@@ -54,12 +50,10 @@ def train_and_evaluate(config_path):
     train = pd.read_csv(train_data_path, sep=",")
     test = pd.read_csv(test_data_path, sep=",")
 
-    # Debugging step: Print columns to verify target exists
+    # Debugging: Print columns to verify target exists
     print("Columns in training dataset:", train.columns.tolist())
-
     if target not in train.columns:
         raise ValueError(f"❌ ERROR: Target column '{target}' not found in training dataset. Check params.yaml and train data!")
-
     if target not in test.columns:
         raise ValueError(f"❌ ERROR: Target column '{target}' not found in test dataset. Check params.yaml and test data!")
 
@@ -69,18 +63,16 @@ def train_and_evaluate(config_path):
     train_x = train.drop(target, axis=1)
     test_x = test.drop(target, axis=1)
 
-    ################### ✅ MLFLOW INTEGRATION ✅ ###############################
+    ################### MLflow Integration ###############################
     mlflow_config = config["mlflow_config"]
     remote_server_uri = mlflow_config["remote_server_uri"]
 
-    # Set MLflow tracking URI
+    # Set MLflow tracking URI and experiment
     mlflow.set_tracking_uri(remote_server_uri)
-
-    # Set MLflow experiment name
     mlflow.set_experiment(mlflow_config["experiment_name"])
 
     with mlflow.start_run(run_name=mlflow_config["run_name"]) as mlops_run:
-        # Initialize and train model
+        # Train the model
         lr = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, random_state=random_state)
         lr.fit(train_x, train_y)
 
@@ -90,11 +82,9 @@ def train_and_evaluate(config_path):
         # Evaluate model performance
         rmse, mae, r2 = eval_metrics(test_y, predicted_qualities)
 
-        # Log hyperparameters to MLflow
+        # Log hyperparameters and metrics to MLflow
         mlflow.log_param("alpha", alpha)
         mlflow.log_param("l1_ratio", l1_ratio)
-
-        # Log evaluation metrics to MLflow
         mlflow.log_metric("rmse", rmse)
         mlflow.log_metric("mae", mae)
         mlflow.log_metric("r2", r2)
@@ -102,11 +92,11 @@ def train_and_evaluate(config_path):
         # Determine MLflow tracking storage type
         tracking_url_type_store = urlparse(mlflow.get_artifact_uri()).scheme
 
-        # Log model to MLflow (Local or Remote Tracking)
+        # Log the model to MLflow
         if tracking_url_type_store != "file":
             mlflow.sklearn.log_model(
-                lr, 
-                "model", 
+                lr,
+                "model",
                 registered_model_name=mlflow_config["registered_model_name"]
             )
         else:
@@ -114,6 +104,11 @@ def train_and_evaluate(config_path):
 
         print(f"✅ MLflow logging completed with experiment: {mlflow_config['experiment_name']}")
 
+    # Save the trained model locally (if needed)
+    os.makedirs(model_dir, exist_ok=True)
+    model_path = os.path.join(model_dir, "model.joblib")
+    joblib.dump(lr, model_path)
+    print(f"✅ Model saved locally at: {model_path}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train and evaluate the model with MLflow logging")
