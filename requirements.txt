@@ -11,3 +11,4 @@ numpy  # Commonly used in ML models
 pyyaml  # Required for reading params.yaml
 flask
 gunicorn
+mlflow>=2.0.0
