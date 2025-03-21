@@ -61,7 +61,7 @@ def test_api_response_correct_range():
 
 def test_form_response_incorrect_range():
     with pytest.raises(prediction_service.prediction.NotInRange):
-        form_response(input_data["incorrect_range"])
+        _ = form_response(input_data["incorrect_range"])
 
 def test_api_response_incorrect_range():
     res = api_response(input_data["incorrect_range"])
