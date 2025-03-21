@@ -108,7 +108,29 @@ def train_and_evaluate(config_path):
     os.makedirs(model_dir, exist_ok=True)
     model_path = os.path.join(model_dir, "model.joblib")
     joblib.dump(lr, model_path)
-    print(f"✅ Model saved locally at: {model_path}")
+    print(f"✅ Model saved locally at: {model_path}") 
+
+# Save scores and parameters to files for DVC tracking
+    scores = {
+        "rmse": rmse,
+        "mae": mae,
+        "r2": r2
+    }
+
+    params = {
+        "alpha": alpha,
+        "l1_ratio": l1_ratio
+    }
+
+    # Save metrics and params to JSON
+    with open(config["reports"]["scores"], "w") as f:
+        json.dump(scores, f, indent=4)
+
+    with open(config["reports"]["params"], "w") as f:
+        json.dump(params, f, indent=4)
+
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train and evaluate the model with MLflow logging")

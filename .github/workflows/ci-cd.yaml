@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - main-mlflow
   pull_request:
     branches:
       - main
+      - main-mlflow
 
 jobs:
   build:
@@ -44,7 +46,7 @@ jobs:
       env:
         HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
-      if: github.ref == 'refs/heads/main' && success()
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/main-mlflow' && success()
       run: |
         echo "🚀 Deploying to Heroku..."
         heroku git:remote -a $HEROKU_APP_NAME
